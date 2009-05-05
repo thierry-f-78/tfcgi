@@ -160,6 +160,7 @@ void tfcgi_start(void) {
 		exit(1);
 	}
 
+	/* network bind */
 	listen_socket = FCGX_OpenSocket(tfcgi_socket, tfcgi_backlog);
 	if (listen_socket < 0) {
 		LOGMSG(LOG_ERR,
@@ -189,7 +190,7 @@ void tfcgi_start(void) {
 		exit(1);
 	}
 
-	// init all threads
+	/* init all threads */
 	for (i=0; i<tfcgi_threads_nb; i++) {
 
 #endif
@@ -205,7 +206,7 @@ void tfcgi_start(void) {
 		rq->next = free_queue;
 		free_queue = rq;
 
-		/* init request pool */
+		/* init FastCGI request */
 		if(FCGX_InitRequest(&rq->fcgi, listen_socket, 0)){
 			LOGMSG(LOG_ERR, "FCGX_InitRequest(): error");
 			exit(1);
@@ -213,11 +214,12 @@ void tfcgi_start(void) {
 
 #ifdef USE_THREADS
 
-		// lock starting mutex
+		/* lock starting mutex */
 		pthread_mutex_lock(&start_ctl);
 
-		// launch thread
-		// the thread lock(read_run_queue) and try to lock(start_ctl)
+		/* launch thread
+		 * the thread lock(read_run_queue) and try to lock(start_ctl)
+		 */
 		ret_code = pthread_create(&(all_threads[i]), NULL,
 		                          thread_start, (void *)i);
 		if (ret_code != 0) {
@@ -246,17 +248,20 @@ void tfcgi_start(void) {
 			exit(1);
 		}
 
-		// wait for thread starting
-		// unlock start_ctl, this is now locked by the thread
-		// the thread send a signal, and un lock start_ctl
+		/* wait for thread starting
+		 * unlock start_ctl, this is now locked by the thread
+		 * the thread send a signal, and un lock start_ctl
+		 */
 		pthread_cond_wait(&c_start_ctl, &start_ctl);
 
-		// try to lock read_run_queue. the thread must wait
-		// for a signal on mutex read_run_queue.
+		/* try to lock read_run_queue. the thread must wait
+		 * for a signal on mutex read_run_queue.
+		 */
 		pthread_mutex_lock(&read_run_queue);
 
-		// the thread is currently waiting for a read_run_queue signal.
-		// un lock all
+		/* the thread is currently waiting for a read_run_queue signal.
+		 * un lock all
+		 */
 		pthread_mutex_unlock(&read_run_queue);
 		pthread_mutex_unlock(&start_ctl);
 		LOGMSG(LOG_DEBUG, "thread %d started", i);
