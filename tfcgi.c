@@ -149,6 +149,11 @@ void tfcgi_start(void) {
 	int i;
 #endif
 
+	/* check params */
+	if (tfcgi_exec == NULL) {
+		LOGMSG(LOG_CRIT, "No function defined for main appli, use \"tfcgi_set_exec\"");
+	}
+
 	/* init fcgi system */
 	if(FCGX_Init()){
 		LOGMSG(LOG_CRIT, "FCGX_Init(): error");
