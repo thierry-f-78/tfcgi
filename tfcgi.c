@@ -40,12 +40,13 @@ pthread_t *all_threads;
 #endif
 
 /* user params */
-void (*tfcgi_init_threads)(int thread_id);
-void (*tfcgi_exec)(FCGX_Request fcgi, int thread_id);
-char *tfcgi_socket;
-int tfcgi_backlog;
-mode_t tfcgi_socket_mode;
-int tfcgi_threads_nb;
+void (*tfcgi_init_threads)(int thread_id)            = NULL;
+void (*tfcgi_exec)(FCGX_Request fcgi, int thread_id) = NULL;
+/* NULL listen on socket 0, this initialized by the launcher */
+char *tfcgi_socket                                   = NULL;
+int tfcgi_backlog                                    = 50;
+mode_t tfcgi_socket_mode                             = 0;
+int tfcgi_threads_nb                                 = 10;
 
 #define LOGMSG(lvl, fmt, args...) \
         fprintf(stderr, fmt, ## args);
