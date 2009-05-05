@@ -53,10 +53,10 @@ int tfcgi_threads_nb                                 = 10;
 
 void *thread_start(void *parg) {
 	struct tfcgi *rq;
-	int thread_id;
+	long thread_id;
 
 	// get thread id
-	thread_id = (int)parg;
+	thread_id = (long)parg;
 
 	// execute user code init thread
 	if (tfcgi_init_threads != NULL) {
@@ -77,7 +77,7 @@ void *thread_start(void *parg) {
 	pthread_mutex_unlock(&start_ctl);
 
 	// waiting for a job
-	LOGMSG(LOG_DEBUG, "[thread %d] wait for a job in run_queue",
+	LOGMSG(LOG_DEBUG, "[thread %lu] wait for a job in run_queue",
 	             thread_id);
 	pthread_cond_wait(&c_run_queue, &read_run_queue);
 
@@ -119,14 +119,14 @@ void *thread_start(void *parg) {
 		free_queue = rq;
 
 		/* send signal for a new job released in free_queue */
-		LOGMSG(LOG_DEBUG, "[thread %d] send finish signal",
+		LOGMSG(LOG_DEBUG, "[thread %lu] send finish signal",
 		             thread_id);
 		pthread_cond_signal(&c_free_queue);
 		pthread_mutex_unlock(&read_free_queue);
 
 		/* wait for a new job signal */
 		LOGMSG(LOG_DEBUG,
-		             "[thread %d] wait for a job in run_queue", thread_id);
+		             "[thread %lu] wait for a job in run_queue", thread_id);
 		pthread_cond_wait(&c_run_queue, &read_run_queue);
 	}
 
@@ -146,7 +146,7 @@ void tfcgi_start(void) {
 	int listen_socket;
 	struct tfcgi *rq;
 #ifdef USE_THREADS
-	int i;
+	long i;
 #endif
 
 	/* check params */
@@ -264,7 +264,7 @@ void tfcgi_start(void) {
 		 */
 		pthread_mutex_unlock(&read_run_queue);
 		pthread_mutex_unlock(&start_ctl);
-		LOGMSG(LOG_DEBUG, "thread %d started", i);
+		LOGMSG(LOG_DEBUG, "thread %lu started", i);
 	}
 
 #endif

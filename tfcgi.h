@@ -45,4 +45,6 @@ static inline void tfcgi_set_threads_nb(int arg) {
 	tfcgi_threads_nb = arg;
 }
 
+void tfcgi_start(void);
+
 #endif /* __TFCGI_H__ */
