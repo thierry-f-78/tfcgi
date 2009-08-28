@@ -121,8 +121,8 @@ void *thread_start(void *parg) {
 		/* send signal for a new job released in free_queue */
 		LOGMSG(LOG_DEBUG, "[thread %lu] send finish signal",
 		             thread_id);
-		pthread_cond_signal(&c_free_queue);
 		pthread_mutex_unlock(&read_free_queue);
+		pthread_cond_signal(&c_free_queue);
 
 		/* wait for a new job signal */
 		LOGMSG(LOG_DEBUG,
@@ -278,8 +278,10 @@ void tfcgi_start(void) {
 		pthread_mutex_lock(&read_free_queue);
 
 		/* if finish null, wait for read_free_queue signal */
-		while (free_queue == NULL)
+		while (free_queue == NULL) {
+			LOGMSG(LOG_DEBUG, "[thread main] attente d'un slot libre");
 			pthread_cond_wait(&c_free_queue, &read_free_queue);
+		}
 
 		/* get next free element */
 		rq = free_queue;
@@ -313,8 +315,8 @@ void tfcgi_start(void) {
 
 		/* unlock run queue */
 		LOGMSG(LOG_DEBUG, "[thread main] send start signal");
-		pthread_cond_signal(&c_run_queue);
 		pthread_mutex_unlock(&read_run_queue);
+		pthread_cond_signal(&c_run_queue);
 
 #else
 
