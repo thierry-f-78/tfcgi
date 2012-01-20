@@ -13,7 +13,7 @@
 
 #include "tfcgi.h"
 
-#define STACK_SIZE 0xf000
+#define STACK_SIZE (256*1024)
 
 struct tfcgi {
 	FCGX_Request fcgi;   /* fcgi pointer */
