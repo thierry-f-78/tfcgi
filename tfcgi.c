@@ -13,6 +13,8 @@
 
 #include "tfcgi.h"
 
+#define STACK_SIZE 0xf000
+
 struct tfcgi {
 	FCGX_Request fcgi;   /* fcgi pointer */
 	struct tfcgi *next;  /* for chain into different pool */
@@ -147,6 +149,7 @@ void tfcgi_start(void) {
 	struct tfcgi *rq;
 #ifdef USE_THREADS
 	long i;
+	pthread_attr_t tattr;
 #endif
 
 	/* check params */
@@ -217,10 +220,14 @@ void tfcgi_start(void) {
 		/* lock starting mutex */
 		pthread_mutex_lock(&start_ctl);
 
+		/* set stacksize */
+		pthread_attr_init(&tattr);
+		pthread_attr_setstacksize(&tattr, STACK_SIZE);
+
 		/* launch thread
 		 * the thread lock(read_run_queue) and try to lock(start_ctl)
 		 */
-		ret_code = pthread_create(&(all_threads[i]), NULL,
+		ret_code = pthread_create(&(all_threads[i]), &tattr,
 		                          thread_start, (void *)i);
 		if (ret_code != 0) {
 			switch (ret_code) {
